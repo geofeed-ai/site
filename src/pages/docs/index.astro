@@ -1,0 +1,178 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+  title="Protocol Docs"
+  description="Open GeoFeed Protocol specification — SubdivisionPath, GeoFeeds, registry architecture, and API reference."
+>
+  <div class="mx-auto max-w-5xl px-6 pt-16 pb-24">
+    <div class="max-w-3xl">
+      <p class="font-mono text-xs text-emerald-400 mb-4 tracking-widest uppercase">
+        Documentation
+      </p>
+      <h1 class="text-3xl font-semibold tracking-tight text-white mb-4">
+        Open GeoFeed Protocol
+      </h1>
+      <p class="text-neutral-400 mb-12 text-lg">
+        Protocol specification, registry architecture, and API reference.
+      </p>
+
+      <!-- Core Concepts -->
+      <section class="mb-12">
+        <h2 class="text-lg font-semibold text-white mb-6 pb-2 border-b border-neutral-800">
+          Core Concepts
+        </h2>
+        <div class="space-y-8">
+
+          <div>
+            <h3 class="font-mono text-sm text-emerald-400 mb-2">SubdivisionPath</h3>
+            <p class="text-neutral-400 text-sm mb-3">
+              A slash-separated sequence of lowercase slugs starting with an ISO 3166-1 alpha-3 country code.
+              Paths are hierarchical and unambiguous — each segment narrows the geographic scope.
+            </p>
+            <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-4 font-mono text-sm">
+              <div class="space-y-1 text-neutral-400">
+                <div><span class="text-emerald-400">bra</span><span class="text-neutral-600 ml-4"># country</span></div>
+                <div><span class="text-emerald-400">bra/sp</span><span class="text-neutral-600 ml-4"># state</span></div>
+                <div><span class="text-emerald-400">bra/sp/sao-paulo</span><span class="text-neutral-600 ml-4"># municipality</span></div>
+                <div><span class="text-emerald-400">bra/sp/sao-paulo/tatuape</span><span class="text-neutral-600 ml-4"># neighborhood</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="font-mono text-sm text-emerald-400 mb-2">GeoFeeds</h3>
+            <p class="text-neutral-400 text-sm mb-3">
+              Activity feeds in Actor-Verb-Object format (ActivityPub wire format), anchored to a geopath.
+              Any actor — business, person, government — can publish a feed for any geopath they operate in.
+            </p>
+            <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-4 font-mono text-sm text-neutral-400">
+              user:gi-matos → place:salao → subdivision:bra/sp/sao-paulo/tatuape
+            </div>
+          </div>
+
+          <div>
+            <h3 class="font-mono text-sm text-emerald-400 mb-2">Registry</h3>
+            <p class="text-neutral-400 text-sm">
+              The registry operates like DNS root servers: it knows what geopaths exist and which
+              servers are authoritative for them, but delegates actual content to registered servers.
+              Anyone can register as a content server without permission from the registry operator.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- API Reference -->
+      <section class="mb-12">
+        <h2 class="text-lg font-semibold text-white mb-6 pb-2 border-b border-neutral-800">
+          API Reference
+        </h2>
+
+        <div class="space-y-6">
+          {[
+            {
+              method: "GET",
+              path: "api.geofeed.ai/{geopath}",
+              description: "Returns registry metadata for a geopath: name, type, parent, registered servers, and geometry.",
+            },
+            {
+              method: "GET",
+              path: "api.geofeed.ai/{geopath}/children",
+              description: "Lists direct children of a geopath (e.g., all neighborhoods in a municipality).",
+            },
+            {
+              method: "GET",
+              path: "md.geofeed.ai/{geopath}",
+              description: "Returns the same metadata as a Markdown document — optimized for LLM consumption and RAG pipelines.",
+            },
+            {
+              method: "GET",
+              path: "mcp.geofeed.ai",
+              description: "MCP server endpoint. Provides resolve_geopath and list_children tools for AI agents.",
+            },
+          ].map((endpoint) => (
+            <div class="rounded-lg border border-neutral-800 p-4">
+              <div class="flex items-center gap-3 mb-2 font-mono text-sm">
+                <span class="text-xs bg-emerald-900 text-emerald-300 px-2 py-0.5 rounded">{endpoint.method}</span>
+                <span class="text-neutral-300">{endpoint.path}</span>
+              </div>
+              <p class="text-sm text-neutral-500">{endpoint.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- SubdivisionType levels -->
+      <section class="mb-12">
+        <h2 class="text-lg font-semibold text-white mb-6 pb-2 border-b border-neutral-800">
+          SubdivisionType Levels
+        </h2>
+        <div class="rounded-lg border border-neutral-800 overflow-hidden">
+          <table class="w-full text-sm font-mono">
+            <thead>
+              <tr class="border-b border-neutral-800 bg-neutral-900">
+                <th class="text-left px-4 py-3 text-neutral-500 font-normal">local_level</th>
+                <th class="text-left px-4 py-3 text-neutral-500 font-normal">type_slug</th>
+                <th class="text-left px-4 py-3 text-neutral-500 font-normal">name (Brazil)</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-neutral-800">
+              {[
+                [1, "bra", "Country"],
+                [2, "bra-state", "Estado"],
+                [3, "bra-municipality", "Município"],
+                [4, "bra-district", "Distrito"],
+                [5, "bra-subdistrict", "Subdistrito"],
+                [6, "bra-neighborhood", "Bairro"],
+              ].map(([level, slug, name]) => (
+                <tr class="hover:bg-neutral-900 transition-colors">
+                  <td class="px-4 py-3 text-neutral-400">{level}</td>
+                  <td class="px-4 py-3 text-emerald-400">{slug}</td>
+                  <td class="px-4 py-3 text-neutral-400">{name}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Server types -->
+      <section class="mb-12">
+        <h2 class="text-lg font-semibold text-white mb-6 pb-2 border-b border-neutral-800">
+          Server Types
+        </h2>
+        <div class="space-y-3 text-sm">
+          {[
+            { type: "index", description: "Static presence — name, address, contact. No activity feed." },
+            { type: "feed", description: "Activity feed — posts, events, offers anchored to the geopath." },
+            { type: "signal", description: "Real-time feed — high-frequency updates, sensor data, live events." },
+            { type: "promoted:true", description: "Promoted placement — shown above organic results (Findera Ads)." },
+          ].map((s) => (
+            <div class="flex gap-4 items-start rounded-lg border border-neutral-800 p-4">
+              <span class="font-mono text-emerald-400 text-xs mt-0.5 shrink-0">{s.type}</span>
+              <p class="text-neutral-400">{s.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- llms.txt -->
+      <section>
+        <h2 class="text-lg font-semibold text-white mb-4 pb-2 border-b border-neutral-800">
+          LLM Integration
+        </h2>
+        <p class="text-neutral-400 text-sm mb-4">
+          geofeed.ai ships an <code class="font-mono text-emerald-400">/llms.txt</code> at the root — a machine-readable
+          index of the protocol for LLM crawlers and RAG systems.
+        </p>
+        <p class="text-neutral-400 text-sm">
+          All pages include JSON-LD structured data (Schema.org). The <code class="font-mono text-emerald-400">md.</code> subdomain
+          serves every geopath as plain Markdown for direct LLM ingestion.
+        </p>
+      </section>
+
+    </div>
+  </div>
+</Layout>

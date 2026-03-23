@@ -1,0 +1,88 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+  jsonLd?: object;
+}
+
+const {
+  title,
+  description = "Open GeoFeed Protocol — the open infrastructure layer for Local GEO.",
+  jsonLd,
+} = Astro.props;
+
+const canonicalUrl = new URL(Astro.url.pathname, "https://geofeed.ai");
+---
+
+<!doctype html>
+<html lang="en" class="bg-neutral-950 text-neutral-100">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title} — geofeed.ai</title>
+    <meta name="description" content={description} />
+
+    <link rel="canonical" href={canonicalUrl.href} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={`${title} — geofeed.ai`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl.href} />
+    <meta property="og:type" content="website" />
+
+    <!-- JSON-LD -->
+    {
+      jsonLd && (
+        <script
+          type="application/ld+json"
+          set:html={JSON.stringify(jsonLd)}
+        />
+      )
+    }
+  </head>
+  <body class="min-h-screen font-sans antialiased">
+    <header class="border-b border-neutral-800">
+      <nav class="mx-auto max-w-5xl px-6 py-4 flex items-center justify-between">
+        <a href="/" class="font-mono text-sm font-semibold tracking-tight text-white hover:text-neutral-300 transition-colors">
+          geofeed.ai
+        </a>
+        <div class="flex items-center gap-6 text-sm text-neutral-400">
+          <a href="/docs" class="hover:text-white transition-colors">Docs</a>
+          <a href="/bra" class="hover:text-white transition-colors">Registry</a>
+          <a
+            href="https://github.com/geofeed-ai"
+            target="_blank"
+            rel="noopener"
+            class="hover:text-white transition-colors"
+          >
+            GitHub
+          </a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="border-t border-neutral-800 mt-24">
+      <div class="mx-auto max-w-5xl px-6 py-8 flex items-center justify-between text-sm text-neutral-500">
+        <span>Open GeoFeed Protocol — Apache 2.0</span>
+        <span>
+          Sponsored by{" "}
+          <a
+            href="https://findera.com.br"
+            target="_blank"
+            rel="noopener"
+            class="text-neutral-400 hover:text-white transition-colors"
+          >
+            Findera
+          </a>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

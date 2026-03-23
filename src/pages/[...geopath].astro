@@ -1,0 +1,134 @@
+---
+/**
+ * Dynamic geopath pages: geofeed.ai/bra, geofeed.ai/bra/sp, etc.
+ *
+ * getStaticPaths returns a seed set of paths for the scaffold.
+ * In production, replace with a full list generated from the registry dataset
+ * (1.17M subdivisions → pre-rendered static HTML).
+ *
+ * TODO: Load paths from /dataset or fetch from api.geofeed.ai at build time.
+ */
+
+import Layout from "../layouts/Layout.astro";
+
+export async function getStaticPaths() {
+  // Seed paths — replace with full dataset at build time
+  const paths = [
+    "bra",
+    "bra/sp",
+    "bra/rj",
+    "bra/mg",
+    "bra/sp/sao-paulo",
+    "bra/sp/campinas",
+    "bra/sp/barueri",
+    "bra/rj/rio-de-janeiro",
+    "bra/sp/sao-paulo/tatuape",
+    "bra/sp/sao-paulo/pinheiros",
+    "bra/sp/sao-paulo/vila-madalena",
+    "bra/sp/barueri/alphaville",
+  ];
+
+  return paths.map((geopath) => ({
+    params: { geopath },
+  }));
+}
+
+const { geopath } = Astro.params;
+
+if (!geopath) {
+  return Astro.redirect("/");
+}
+
+const segments = geopath.split("/");
+const name = segments[segments.length - 1].replace(/-/g, " ");
+const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
+
+const breadcrumbs = segments.map((seg, i) => ({
+  label: seg,
+  href: "/" + segments.slice(0, i + 1).join("/"),
+}));
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Place",
+  name: capitalizedName,
+  identifier: geopath,
+  url: `https://geofeed.ai/${geopath}`,
+};
+---
+
+<Layout
+  title={capitalizedName}
+  description={`OGP registry entry for ${geopath} — registered servers, hierarchy, and metadata.`}
+  jsonLd={jsonLd}
+>
+  <div class="mx-auto max-w-5xl px-6 pt-12 pb-24">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-1 font-mono text-xs text-neutral-600 mb-8">
+      <a href="/" class="hover:text-neutral-400 transition-colors">geofeed.ai</a>
+      {breadcrumbs.map((crumb) => (
+        <>
+          <span>/</span>
+          <a href={crumb.href} class="hover:text-neutral-400 transition-colors">{crumb.label}</a>
+        </>
+      ))}
+    </nav>
+
+    <!-- Header -->
+    <div class="mb-10">
+      <p class="font-mono text-xs text-emerald-400 mb-2">{geopath}</p>
+      <h1 class="text-3xl font-semibold text-white tracking-tight mb-2">{capitalizedName}</h1>
+      <p class="text-neutral-500 text-sm">
+        Registry entry · {segments.length === 1 ? "Country" : segments.length === 2 ? "State" : segments.length === 3 ? "Municipality" : "Neighborhood"}
+      </p>
+    </div>
+
+    <!-- Alternate representations -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-12 text-sm">
+      {[
+        { label: "JSON", href: `https://api.geofeed.ai/${geopath}`, subdomain: "api" },
+        { label: "Markdown", href: `https://md.geofeed.ai/${geopath}`, subdomain: "md" },
+        { label: "MCP", href: "https://mcp.geofeed.ai", subdomain: "mcp" },
+      ].map((rep) => (
+        <a
+          href={rep.href}
+          target="_blank"
+          rel="noopener"
+          class="flex items-center justify-between rounded-lg border border-neutral-800 px-4 py-3 hover:border-neutral-600 transition-colors"
+        >
+          <span class="font-mono text-xs text-neutral-500">{rep.subdomain}.geofeed.ai</span>
+          <span class="text-neutral-400">{rep.label} →</span>
+        </a>
+      ))}
+    </div>
+
+    <!-- Registry data (placeholder — hydrated from API at build time) -->
+    <section class="mb-10">
+      <h2 class="text-sm font-mono text-neutral-500 uppercase tracking-widest mb-4">
+        Registered Servers
+      </h2>
+      <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-6 text-sm text-neutral-500 text-center">
+        <p class="font-mono">No servers registered yet for this geopath.</p>
+        <p class="mt-2">
+          <a href="/docs#register" class="text-emerald-400 hover:text-emerald-300 transition-colors">
+            Register a server →
+          </a>
+        </p>
+      </div>
+    </section>
+
+    <!-- Children (placeholder) -->
+    {segments.length < 4 && (
+      <section>
+        <h2 class="text-sm font-mono text-neutral-500 uppercase tracking-widest mb-4">
+          Subdivisions
+        </h2>
+        <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-6 text-sm text-neutral-500 text-center">
+          <p class="font-mono">Subdivision data will be populated at build time from the registry dataset.</p>
+        </div>
+      </section>
+    )}
+
+  </div>
+</Layout>

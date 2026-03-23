@@ -1,0 +1,193 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Open GeoFeed Protocol",
+  url: "https://geofeed.ai",
+  description:
+    "The open infrastructure layer for Local GEO — structured activity feeds anchored to geographic hierarchies.",
+};
+---
+
+<Layout
+  title="Open GeoFeed Protocol"
+  description="The open infrastructure layer for Local GEO. Publish and consume structured local activity feeds for LLMs, AI agents, and applications."
+  jsonLd={jsonLd}
+>
+  <!-- Hero -->
+  <section class="mx-auto max-w-5xl px-6 pt-20 pb-16">
+    <div class="max-w-3xl">
+      <p class="font-mono text-xs text-emerald-400 mb-4 tracking-widest uppercase">
+        Open Protocol · Apache 2.0
+      </p>
+      <h1 class="text-4xl font-semibold tracking-tight text-white leading-tight mb-6">
+        The open infrastructure layer<br />for Local GEO.
+      </h1>
+      <p class="text-lg text-neutral-400 leading-relaxed mb-8 max-w-2xl">
+        OGP is a federated protocol for publishing and consuming structured
+        local activity feeds — anchored to a geographic hierarchy that LLMs,
+        AI agents, and applications can query natively.
+      </p>
+      <div class="flex items-center gap-4">
+        <a
+          href="/docs"
+          class="px-4 py-2 bg-white text-neutral-950 text-sm font-medium rounded-md hover:bg-neutral-200 transition-colors"
+        >
+          Read the docs
+        </a>
+        <a
+          href="/bra/sp/sao-paulo/tatuape"
+          class="px-4 py-2 border border-neutral-700 text-sm text-neutral-300 rounded-md hover:border-neutral-500 hover:text-white transition-colors font-mono"
+        >
+          bra/sp/sao-paulo/tatuape →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Code example -->
+  <section class="mx-auto max-w-5xl px-6 pb-16">
+    <div class="rounded-lg border border-neutral-800 bg-neutral-900 overflow-hidden">
+      <div class="flex items-center gap-2 px-4 py-3 border-b border-neutral-800">
+        <span class="font-mono text-xs text-neutral-500"
+          >GET api.geofeed.ai/bra/sp/sao-paulo/tatuape</span
+        >
+      </div>
+      <pre
+        class="p-6 text-sm font-mono text-neutral-300 overflow-x-auto leading-relaxed"><code>{`{
+  "geopath": "bra/sp/sao-paulo/tatuape",
+  "type": "bra-neighborhood",
+  "name": "Tatuapé",
+  "parent": "bra/sp/sao-paulo",
+  "servers": [
+    {
+      "url": "https://findera.app/geo/bra/sp/sao-paulo/tatuape",
+      "type": "feed",
+      "operator": "findera.com.br"
+    }
+  ],
+  "geoshape": { "type": "Polygon", "coordinates": [...] }
+}`}</code></pre>
+    </div>
+  </section>
+
+  <!-- Three endpoints -->
+  <section class="mx-auto max-w-5xl px-6 pb-16">
+    <h2 class="text-sm font-mono text-neutral-500 uppercase tracking-widest mb-8">
+      Three representations, one namespace
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {
+        [
+          {
+            subdomain: "geofeed.ai",
+            audience: "Humans",
+            format: "HTML",
+            description:
+              "Browse geopaths and registered servers in your browser.",
+          },
+          {
+            subdomain: "api.geofeed.ai",
+            audience: "Developers / APIs",
+            format: "JSON",
+            description:
+              "Structured JSON responses for applications and integrations.",
+          },
+          {
+            subdomain: "md.geofeed.ai",
+            audience: "LLMs / RAG",
+            format: "Markdown",
+            description:
+              "Plain Markdown — optimized for retrieval-augmented generation.",
+          },
+        ].map((item) => (
+          <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-5">
+            <p class="font-mono text-xs text-emerald-400 mb-1">
+              {item.subdomain}
+            </p>
+            <p class="text-white font-medium mb-1">{item.audience}</p>
+            <p class="text-xs text-neutral-500 font-mono mb-3">{item.format}</p>
+            <p class="text-sm text-neutral-400">{item.description}</p>
+          </div>
+        ))
+      }
+    </div>
+    <div class="mt-4 rounded-lg border border-neutral-800 bg-neutral-900 p-5">
+      <p class="font-mono text-xs text-purple-400 mb-1">mcp.geofeed.ai</p>
+      <p class="text-white font-medium mb-1">AI Agents</p>
+      <p class="text-xs text-neutral-500 font-mono mb-3">MCP Server</p>
+      <p class="text-sm text-neutral-400">
+        Model Context Protocol endpoint — give any MCP-compatible AI agent
+        direct access to the geopath registry.
+      </p>
+    </div>
+  </section>
+
+  <!-- SubdivisionPath -->
+  <section class="mx-auto max-w-5xl px-6 pb-16">
+    <h2 class="text-sm font-mono text-neutral-500 uppercase tracking-widest mb-8">
+      Geographic hierarchy as semantic path
+    </h2>
+    <div
+      class="rounded-lg border border-neutral-800 bg-neutral-900 p-6 font-mono text-sm"
+    >
+      <div class="space-y-3 text-neutral-400">
+        {
+          [
+            ["bra", "country"],
+            ["bra/sp", "state"],
+            ["bra/sp/sao-paulo", "municipality"],
+            ["bra/sp/sao-paulo/tatuape", "neighborhood"],
+          ].map(([path, label], i) => (
+            <div class="flex items-center gap-3">
+              <span class="text-neutral-600 w-4">{i + 1}</span>
+              <a
+                href={`/${path}`}
+                class="text-emerald-400 hover:text-emerald-300 transition-colors"
+              >
+                {path}
+              </a>
+              <span class="text-neutral-600">← {label}</span>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Why OGP -->
+  <section class="mx-auto max-w-5xl px-6 pb-20">
+    <h2 class="text-sm font-mono text-neutral-500 uppercase tracking-widest mb-8">
+      What OGP is not
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+      {
+        [
+          [
+            "Not a replacement for ActivityPub",
+            "OGP extends ActivityPub — a geopath field on top of the standard Actor-Verb-Object model.",
+          ],
+          [
+            "Not a replacement for Schema.org",
+            "OGP uses Schema.org for semantic typing of actors and objects.",
+          ],
+          [
+            "Not a replacement for GeoJSON",
+            "OGP uses GeoJSON for geometry in the geoshape field.",
+          ],
+          [
+            "Not Google Maps",
+            "OGP is the activity layer Maps doesn't have — published by local actors, federated, Apache 2.0.",
+          ],
+        ].map(([title, body]) => (
+          <div class="rounded-lg border border-neutral-800 p-4">
+            <p class="text-white font-medium mb-1">{title}</p>
+            <p class="text-neutral-500">{body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</Layout>

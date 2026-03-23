@@ -1,0 +1,78 @@
+# Open GeoFeed Protocol (OGP)
+
+> The open infrastructure layer for Local GEO — structured activity feeds anchored to geographic hierarchies.
+
+## What is OGP?
+
+OGP is a federated protocol for publishing and consuming structured local activity feeds.
+Feeds are anchored to SubdivisionPaths — hierarchical geographic identifiers like `bra/sp/sao-paulo/tatuape`.
+
+## How to use this site
+
+- `geofeed.ai/{geopath}` — human-readable registry page (HTML)
+- `api.geofeed.ai/{geopath}` — JSON registry data (for applications)
+- `md.geofeed.ai/{geopath}` — Markdown registry data (for LLMs and RAG)
+- `mcp.geofeed.ai` — MCP server endpoint (for AI agents)
+
+## SubdivisionPath format
+
+```
+bra                           # country (ISO 3166-1 alpha-3)
+bra/sp                        # state
+bra/sp/sao-paulo              # municipality
+bra/sp/sao-paulo/tatuape      # neighborhood
+```
+
+## GeoFeed activity format
+
+OGP uses ActivityPub wire format extended with a `geopath` field:
+
+```json
+{
+  "@context": ["https://www.w3.org/ns/activitystreams"],
+  "type": "Create",
+  "actor": "https://findera.app/actors/salao-gi-matos",
+  "object": {
+    "type": "Note",
+    "geopath": "bra/sp/sao-paulo/tatuape",
+    "content": "Agenda aberta para esta semana!"
+  }
+}
+```
+
+## Registry JSON schema
+
+```json
+{
+  "geopath": "bra/sp/sao-paulo/tatuape",
+  "type": "bra-neighborhood",
+  "name": "Tatuapé",
+  "parent": "bra/sp/sao-paulo",
+  "servers": [
+    {
+      "url": "https://findera.app/geo/bra/sp/sao-paulo/tatuape",
+      "type": "feed",
+      "operator": "findera.com.br"
+    }
+  ],
+  "geoshape": { "type": "Polygon", "coordinates": [] }
+}
+```
+
+## Server types
+
+- `index` — static presence (name, address, contact)
+- `feed` — activity feed (posts, events, offers)
+- `signal` — real-time feed (high-frequency updates)
+- `promoted:true` — promoted placement
+
+## License
+
+Apache 2.0. Sponsored by Findera (findera.com.br).
+
+## Links
+
+- Protocol spec: https://geofeed.ai/docs
+- GitHub: https://github.com/geofeed-ai
+- HuggingFace: https://huggingface.co/geofeed-ai
+- Findera: https://findera.com.br
