@@ -1,0 +1,194 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+  title="About"
+  description="The story behind the Open GeoFeed Protocol — built by Matheus Matos, founder of Findera."
+>
+  <div class="mx-auto max-w-3xl px-6 pt-16 pb-24">
+
+    <p class="font-mono text-xs text-emerald-400 mb-4 tracking-widest uppercase">About</p>
+    <h1 class="text-3xl font-semibold tracking-tight text-white mb-10">
+      Why this exists.
+    </h1>
+
+    <!-- Origin story -->
+    <section class="mb-12 prose-section">
+      <p class="text-neutral-400 leading-relaxed mb-4">
+        In 2016, I built a chatbot that answered questions about local businesses in natural language.
+        You'd type "where's a good place for bacalhau near me?" and it would answer with a real recommendation.
+        The product worked, technically. But NLP wasn't mature enough for the experience to feel right,
+        and I shelved it.
+      </p>
+      <p class="text-neutral-400 leading-relaxed mb-4">
+        The idea didn't go away. It came back in 2020 as a different shape: neighborhood feeds.
+        Each place in the world would have its own activity feed — feed do Tatuapé, feed de Pinheiros.
+        Businesses would post to their neighborhood's feed. Locals would read it.
+        The monetization layer would be ads targeted by geopath instead of by device ID.
+      </p>
+      <p class="text-neutral-400 leading-relaxed">
+        That version died on the classic hyperlocal problem: you need users to attract businesses,
+        and businesses to attract users. The unit economics of building a social network
+        are brutal, and I wasn't willing to raise the kind of money it would take to win that game.
+      </p>
+    </section>
+
+    <div class="border-l-2 border-neutral-800 pl-6 mb-12">
+      <p class="text-neutral-300 leading-relaxed italic">
+        "The core insight survived every pivot: local activity data is structurally missing
+        from the internet. Not because it doesn't exist — it does, scattered across Instagram,
+        WhatsApp groups, and paper flyers — but because it has never been published
+        in a machine-readable format anchored to a place."
+      </p>
+    </div>
+
+    <!-- The shift -->
+    <section class="mb-12">
+      <h2 class="text-lg font-semibold text-white mb-4">The shift that made it click</h2>
+      <p class="text-neutral-400 leading-relaxed mb-4">
+        By 2024, LLMs changed the question. The problem was no longer "how do we build a consumer
+        product around local data?" The problem became "why don't AI agents know what's happening
+        near me?"
+      </p>
+      <p class="text-neutral-400 leading-relaxed mb-4">
+        ChatGPT, Gemini, Perplexity — they all struggle with the same blind spot.
+        Ask them what's happening in your neighborhood today and you get either silence
+        or something pulled from a review platform updated six months ago.
+        The data they need doesn't exist in a format they can consume.
+      </p>
+      <p class="text-neutral-400 leading-relaxed">
+        That's the gap OGP fills. Not a consumer app, not a social network — a protocol.
+        A standard for how local actors publish structured activity feeds, and how AI agents
+        discover and consume them. The same idea from 2016, but finally in the right form.
+      </p>
+    </section>
+
+    <!-- What OGP is -->
+    <section class="mb-12">
+      <h2 class="text-lg font-semibold text-white mb-4">What OGP is (and isn't)</h2>
+      <p class="text-neutral-400 leading-relaxed mb-4">
+        OGP is infrastructure. It defines a geographic namespace
+        (<a href="/docs#subdivision-path" class="text-emerald-400 hover:text-emerald-300 transition-colors">SubdivisionPaths</a>),
+        a registry that maps paths to content servers, and a feed format based on ActivityStreams 2.0
+        with a single extension: the <code class="font-mono text-emerald-400">geopath</code> field.
+      </p>
+      <p class="text-neutral-400 leading-relaxed mb-4">
+        It's not a product. It doesn't have a dashboard, a login, or a pricing page.
+        Any implementation that follows the spec can register with the public registry.
+        Any AI agent that understands ActivityStreams can consume the feeds.
+        The protocol is Apache 2.0 — permanently.
+      </p>
+      <p class="text-neutral-400 leading-relaxed">
+        The registry at geofeed.ai is the root — the DNS of the protocol.
+        It doesn't serve content. It tells you who does.
+      </p>
+    </section>
+
+    <!-- Findera -->
+    <section class="mb-12 rounded-lg border border-neutral-800 p-6">
+      <div class="flex items-start gap-4">
+        <div class="min-w-0">
+          <div class="flex items-center gap-3 mb-3">
+            <h2 class="text-lg font-semibold text-white">Findera</h2>
+            <span class="font-mono text-xs text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded">
+              primary implementation
+            </span>
+          </div>
+          <p class="text-neutral-400 leading-relaxed mb-4">
+            <a href="https://findera.com.br" target="_blank" rel="noopener" class="text-white hover:text-neutral-300 transition-colors">Findera</a> is
+            the reference implementation of OGP and the company that sponsors this infrastructure.
+            It's a B2B SaaS for local businesses in Brazil — the product that makes OGP commercially sustainable.
+          </p>
+          <p class="text-neutral-400 leading-relaxed mb-4">
+            Findera publishes structured GeoFeeds on behalf of its customers: local businesses,
+            government entities, and events. Those feeds are registered with geofeed.ai and
+            become available to any AI agent that queries the OGP registry.
+          </p>
+          <p class="text-neutral-400 leading-relaxed">
+            The business model is straightforward: Findera earns recurring revenue from subscriptions.
+            That revenue funds the OGP registry and the open protocol.
+            The open protocol drives awareness and developer adoption.
+            Developer adoption creates the ecosystem that makes Findera more valuable.
+          </p>
+          <div class="mt-5 pt-5 border-t border-neutral-800 grid grid-cols-2 gap-4 text-sm">
+            {[
+              ["Product", "Findera Presença, Conteúdo, Tempo Real, Alcance"],
+              ["Pricing", "Free – R$149/mês per business"],
+              ["Market", "Local businesses in Brazil"],
+              ["Stack", "OGP server type: index, feed, signal"],
+            ].map(([label, value]) => (
+              <div>
+                <p class="text-neutral-600 font-mono text-xs mb-1">{label}</p>
+                <p class="text-neutral-300 text-sm">{value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Founder -->
+    <section class="mb-12">
+      <h2 class="text-lg font-semibold text-white mb-4">The founder</h2>
+      <p class="text-neutral-400 leading-relaxed mb-4">
+        I'm <strong class="text-neutral-200">Matheus Matos</strong>, based in Alphaville, São Paulo.
+        I've been building products around hyperlocal data since 2016 — the chatbot,
+        the neighborhood feed, and now OGP. This is the version I think is right.
+      </p>
+      <p class="text-neutral-400 leading-relaxed mb-4">
+        I trained the
+        <a href="https://huggingface.co/geofeed-ai/subdivision-resolver-br" target="_blank" rel="noopener" class="text-emerald-400 hover:text-emerald-300 transition-colors">subdivision-resolver-br</a>
+        embeddings model — 1.17M training pairs, semantic resolution of Brazilian geographic names
+        to SubdivisionPaths — and published it on HuggingFace under the geofeed-ai org.
+      </p>
+      <p class="text-neutral-400 leading-relaxed">
+        If you're building something with OGP, want to register a server,
+        or just want to talk about the protocol, reach out:
+        <a href="https://github.com/matheusmatos" target="_blank" rel="noopener" class="text-emerald-400 hover:text-emerald-300 transition-colors ml-1">github.com/matheusmatos</a>.
+      </p>
+    </section>
+
+    <!-- Timeline -->
+    <section class="mb-12">
+      <h2 class="text-lg font-semibold text-white mb-6">Timeline</h2>
+      <div class="space-y-0">
+        {[
+          ["2016", "Chatbot de recomendações hiperlocais. NLP too immature. Shelved."],
+          ["2020", "Neighborhood feed with Findera Ads layer. Hyperlocal social network economics didn't work. Pivoted."],
+          ["2024", "Findera relaunched as B2B SaaS for local business presence. LLMs change the context."],
+          ["2025", "Open GeoFeed Protocol specified. Embeddings model trained and published on HuggingFace. geofeed-ai org created."],
+          ["2026", "geofeed.ai live. Findera as primary OGP implementation. Registry open."],
+        ].map(([year, event], i, arr) => (
+          <div class="flex gap-6 group">
+            <div class="flex flex-col items-center">
+              <div class="w-2 h-2 rounded-full bg-neutral-700 group-first:bg-emerald-500 mt-1.5 shrink-0"></div>
+              {i < arr.length - 1 && <div class="w-px flex-1 bg-neutral-800 mt-1"></div>}
+            </div>
+            <div class="pb-8">
+              <p class="font-mono text-xs text-neutral-500 mb-1">{year}</p>
+              <p class="text-neutral-400 text-sm leading-relaxed">{event}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Open source note -->
+    <section class="rounded-lg border border-neutral-800 bg-neutral-900 p-6">
+      <h3 class="font-medium text-white mb-2">Protocol vs. company</h3>
+      <p class="text-neutral-400 text-sm leading-relaxed mb-3">
+        OGP is a protocol, not a product. The spec and the registry are Apache 2.0.
+        Findera is the company that operates the registry and sponsors the infrastructure —
+        but it has no special authority over the protocol.
+        Any conforming implementation can register. Any agent can query.
+      </p>
+      <p class="text-neutral-400 text-sm leading-relaxed">
+        Think of it the way email works: Findera is like Gmail — a major implementation
+        of an open standard. geofeed.ai is like the DNS root — the shared infrastructure
+        that makes the open standard useful. Neither owns the other.
+      </p>
+    </section>
+
+  </div>
+</Layout>
