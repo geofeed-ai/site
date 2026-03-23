@@ -3,176 +3,418 @@ import Layout from "../../layouts/Layout.astro";
 ---
 
 <Layout
-  title="Protocol Docs"
-  description="Open GeoFeed Protocol specification — SubdivisionPath, GeoFeeds, registry architecture, and API reference."
+  title="Documentation"
+  description="Open GeoFeed Protocol — conceptual documentation. SubdivisionPath, GeoFeed format, registry architecture, context system."
 >
   <div class="mx-auto max-w-5xl px-6 pt-16 pb-24">
-    <div class="max-w-3xl">
-      <p class="font-mono text-xs text-emerald-400 mb-4 tracking-widest uppercase">
-        Documentation
-      </p>
-      <h1 class="text-3xl font-semibold tracking-tight text-white mb-4">
-        Open GeoFeed Protocol
-      </h1>
-      <p class="text-neutral-400 mb-12 text-lg">
-        Protocol specification, registry architecture, and API reference.
-      </p>
+    <div class="flex gap-12">
 
-      <!-- Core Concepts -->
-      <section class="mb-12">
-        <h2 class="text-lg font-semibold text-white mb-6 pb-2 border-b border-neutral-800">
-          Core Concepts
-        </h2>
-        <div class="space-y-8">
-
-          <div>
-            <h3 class="font-mono text-sm text-emerald-400 mb-2">SubdivisionPath</h3>
-            <p class="text-neutral-400 text-sm mb-3">
-              A slash-separated sequence of lowercase slugs starting with an ISO 3166-1 alpha-3 country code.
-              Paths are hierarchical and unambiguous — each segment narrows the geographic scope.
-            </p>
-            <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-4 font-mono text-sm">
-              <div class="space-y-1 text-neutral-400">
-                <div><span class="text-emerald-400">bra</span><span class="text-neutral-600 ml-4"># country</span></div>
-                <div><span class="text-emerald-400">bra/sp</span><span class="text-neutral-600 ml-4"># state</span></div>
-                <div><span class="text-emerald-400">bra/sp/sao-paulo</span><span class="text-neutral-600 ml-4"># municipality</span></div>
-                <div><span class="text-emerald-400">bra/sp/sao-paulo/tatuape</span><span class="text-neutral-600 ml-4"># neighborhood</span></div>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <h3 class="font-mono text-sm text-emerald-400 mb-2">GeoFeeds</h3>
-            <p class="text-neutral-400 text-sm mb-3">
-              Activity feeds in Actor-Verb-Object format (ActivityPub wire format), anchored to a geopath.
-              Any actor — business, person, government — can publish a feed for any geopath they operate in.
-            </p>
-            <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-4 font-mono text-sm text-neutral-400">
-              user:gi-matos → place:salao → subdivision:bra/sp/sao-paulo/tatuape
-            </div>
-          </div>
-
-          <div>
-            <h3 class="font-mono text-sm text-emerald-400 mb-2">Registry</h3>
-            <p class="text-neutral-400 text-sm">
-              The registry operates like DNS root servers: it knows what geopaths exist and which
-              servers are authoritative for them, but delegates actual content to registered servers.
-              Anyone can register as a content server without permission from the registry operator.
-            </p>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- API Reference -->
-      <section class="mb-12">
-        <h2 class="text-lg font-semibold text-white mb-6 pb-2 border-b border-neutral-800">
-          API Reference
-        </h2>
-
-        <div class="space-y-6">
+      <!-- Sidebar TOC -->
+      <aside class="hidden lg:block w-48 shrink-0">
+        <nav class="sticky top-8 space-y-1 text-sm">
           {[
-            {
-              method: "GET",
-              path: "api.geofeed.ai/{geopath}",
-              description: "Returns registry metadata for a geopath: name, type, parent, registered servers, and geometry.",
-            },
-            {
-              method: "GET",
-              path: "api.geofeed.ai/{geopath}/children",
-              description: "Lists direct children of a geopath (e.g., all neighborhoods in a municipality).",
-            },
-            {
-              method: "GET",
-              path: "md.geofeed.ai/{geopath}",
-              description: "Returns the same metadata as a Markdown document — optimized for LLM consumption and RAG pipelines.",
-            },
-            {
-              method: "GET",
-              path: "mcp.geofeed.ai",
-              description: "MCP server endpoint. Provides resolve_geopath and list_children tools for AI agents.",
-            },
-          ].map((endpoint) => (
-            <div class="rounded-lg border border-neutral-800 p-4">
-              <div class="flex items-center gap-3 mb-2 font-mono text-sm">
-                <span class="text-xs bg-emerald-900 text-emerald-300 px-2 py-0.5 rounded">{endpoint.method}</span>
-                <span class="text-neutral-300">{endpoint.path}</span>
-              </div>
-              <p class="text-sm text-neutral-500">{endpoint.description}</p>
-            </div>
+            ["#overview", "Overview"],
+            ["#subdivision-path", "SubdivisionPath"],
+            ["#context", "Context"],
+            ["#hierarchy", "Hierarchy"],
+            ["#geofeed", "GeoFeed Format"],
+            ["#registry", "Registry"],
+            ["#endpoints", "Endpoints"],
+            ["#hint", "Hint System"],
+          ].map(([href, label]) => (
+            <a href={href} class="block text-neutral-500 hover:text-neutral-200 transition-colors py-0.5">
+              {label}
+            </a>
           ))}
-        </div>
-      </section>
+          <div class="pt-4 border-t border-neutral-800 mt-4">
+            <a href="/spec" class="block text-emerald-400 hover:text-emerald-300 transition-colors py-0.5">
+              Protocol Spec →
+            </a>
+          </div>
+        </nav>
+      </aside>
 
-      <!-- SubdivisionType levels -->
-      <section class="mb-12">
-        <h2 class="text-lg font-semibold text-white mb-6 pb-2 border-b border-neutral-800">
-          SubdivisionType Levels
-        </h2>
-        <div class="rounded-lg border border-neutral-800 overflow-hidden">
-          <table class="w-full text-sm font-mono">
-            <thead>
-              <tr class="border-b border-neutral-800 bg-neutral-900">
-                <th class="text-left px-4 py-3 text-neutral-500 font-normal">local_level</th>
-                <th class="text-left px-4 py-3 text-neutral-500 font-normal">type_slug</th>
-                <th class="text-left px-4 py-3 text-neutral-500 font-normal">name (Brazil)</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-neutral-800">
+      <!-- Main content -->
+      <div class="min-w-0 flex-1">
+        <p class="font-mono text-xs text-emerald-400 mb-4 tracking-widest uppercase">Documentation</p>
+        <h1 class="text-3xl font-semibold tracking-tight text-white mb-2">Open GeoFeed Protocol</h1>
+        <p class="text-neutral-400 mb-12 text-lg leading-relaxed">
+          Conceptual guide to OGP's core primitives. For formal schemas and field-level specs, see the <a href="/spec" class="text-emerald-400 hover:text-emerald-300 transition-colors">Protocol Spec</a>.
+        </p>
+
+        <!-- Overview -->
+        <section id="overview" class="mb-16 scroll-mt-8">
+          <h2 class="text-xl font-semibold text-white mb-4">Overview</h2>
+          <p class="text-neutral-400 mb-4 leading-relaxed">
+            OGP is built on a simple premise: every piece of local activity — a restaurant's daily special, a store
+            opening, a neighborhood event — happens at a <em class="text-neutral-300">specific place in a specific part
+            of the world</em>. OGP gives that place a stable, human-readable identifier and defines how activity feeds
+            anchored to it are published, discovered, and consumed.
+          </p>
+          <p class="text-neutral-400 mb-4 leading-relaxed">The protocol has three layers:</p>
+          <div class="space-y-3 mb-6">
+            {[
+              ["Namespace", "A geographic hierarchy of slugs — SubdivisionPaths. These are the primary keys of the protocol."],
+              ["Registry", "A DNS-like root that maps paths to authoritative content servers. Operated by geofeed.ai, open to anyone."],
+              ["Feeds", "ActivityPub-based activity streams published by any actor (business, person, government) for any path."],
+            ].map(([title, body]) => (
+              <div class="flex gap-4 rounded-lg border border-neutral-800 p-4">
+                <span class="font-mono text-xs text-emerald-400 mt-0.5 w-20 shrink-0">{title}</span>
+                <p class="text-sm text-neutral-400">{body}</p>
+              </div>
+            ))}
+          </div>
+          <p class="text-neutral-400 leading-relaxed">
+            The registry and the protocol spec are operated by geofeed.ai and licensed Apache 2.0.
+            Any implementation — including Findera — is a conforming server that can register with the public registry.
+          </p>
+        </section>
+
+        <!-- SubdivisionPath -->
+        <section id="subdivision-path" class="mb-16 scroll-mt-8">
+          <h2 class="text-xl font-semibold text-white mb-4">SubdivisionPath</h2>
+          <p class="text-neutral-400 mb-4 leading-relaxed">
+            A SubdivisionPath is the canonical identifier for a geographic subdivision. It is a slash-separated
+            sequence of lowercase slugs, starting with an ISO 3166-1 alpha-3 country code.
+          </p>
+
+          <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-4 font-mono text-sm mb-6">
+            <div class="text-neutral-500 text-xs mb-3">Validation pattern</div>
+            <div class="text-emerald-400">{"^[a-z]{2,3}(?:/[a-z0-9-_]+)*$"}</div>
+          </div>
+
+          <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-5 mb-6">
+            <div class="text-neutral-500 text-xs font-mono mb-4">Examples</div>
+            <div class="space-y-2 font-mono text-sm">
               {[
-                [1, "bra", "Country"],
-                [2, "bra-state", "Estado"],
-                [3, "bra-municipality", "Município"],
-                [4, "bra-district", "Distrito"],
-                [5, "bra-subdistrict", "Subdistrito"],
-                [6, "bra-neighborhood", "Bairro"],
-              ].map(([level, slug, name]) => (
-                <tr class="hover:bg-neutral-900 transition-colors">
-                  <td class="px-4 py-3 text-neutral-400">{level}</td>
-                  <td class="px-4 py-3 text-emerald-400">{slug}</td>
-                  <td class="px-4 py-3 text-neutral-400">{name}</td>
-                </tr>
+                ["bra", "country", "Brazil"],
+                ["bra/sp", "state", "São Paulo (state)"],
+                ["bra/sp/sao-paulo", "municipality", "São Paulo (city)"],
+                ["bra/sp/sao-paulo/tatuape", "neighborhood", "Tatuapé"],
+                ["bra/sp/barueri/alphaville", "neighborhood", "Alphaville"],
+                ["usa/ca/san-francisco/mission", "neighborhood", "Mission District"],
+              ].map(([path, type, name]) => (
+                <div class="flex items-center gap-3">
+                  <a href={`/${path}`} class="text-emerald-400 hover:text-emerald-300 transition-colors">{path}</a>
+                  <span class="text-neutral-700">—</span>
+                  <span class="text-neutral-500">{type}</span>
+                  <span class="text-neutral-600">({name})</span>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- Server types -->
-      <section class="mb-12">
-        <h2 class="text-lg font-semibold text-white mb-6 pb-2 border-b border-neutral-800">
-          Server Types
-        </h2>
-        <div class="space-y-3 text-sm">
-          {[
-            { type: "index", description: "Static presence — name, address, contact. No activity feed." },
-            { type: "feed", description: "Activity feed — posts, events, offers anchored to the geopath." },
-            { type: "signal", description: "Real-time feed — high-frequency updates, sensor data, live events." },
-            { type: "promoted:true", description: "Promoted placement — shown above organic results (Findera Ads)." },
-          ].map((s) => (
-            <div class="flex gap-4 items-start rounded-lg border border-neutral-800 p-4">
-              <span class="font-mono text-emerald-400 text-xs mt-0.5 shrink-0">{s.type}</span>
-              <p class="text-neutral-400">{s.description}</p>
             </div>
-          ))}
+          </div>
+
+          <h3 class="font-medium text-white mb-3">Alpha-2 normalization</h3>
+          <p class="text-neutral-400 mb-6 text-sm leading-relaxed">
+            Paths may begin with a 2-letter country code (ISO 3166-1 alpha-2). They are silently normalized to alpha-3.
+            <code class="font-mono text-emerald-400 mx-1">br/sp/sao-paulo</code> becomes
+            <code class="font-mono text-emerald-400 mx-1">bra/sp/sao-paulo</code>.
+            All canonical storage and API responses use alpha-3.
+          </p>
+
+          <h3 class="font-medium text-white mb-3">Short paths</h3>
+          <p class="text-neutral-400 text-sm leading-relaxed">
+            Some contexts expose a short form that omits the country prefix when the country is implicit:
+            <code class="font-mono text-emerald-400 mx-1">sp/sao-paulo/tatuape</code>.
+            Short paths are display-only — canonical storage and all API responses always use the full path.
+          </p>
+        </section>
+
+        <!-- Context -->
+        <section id="context" class="mb-16 scroll-mt-8">
+          <h2 class="text-xl font-semibold text-white mb-4">Subdivision Context</h2>
+          <p class="text-neutral-400 mb-4 leading-relaxed">
+            A SubdivisionPath is always resolved within a <strong class="text-neutral-200">context</strong>.
+            A context defines which geographic hierarchy is active for a country.
+            The same physical subdivision can have different paths in different contexts.
+          </p>
+
+          <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-5 font-mono text-sm mb-6">
+            <div class="text-neutral-500 text-xs mb-4">Same neighborhood, two contexts</div>
+            <div class="space-y-2">
+              <div>
+                <span class="text-emerald-400">bra/sp/sao-paulo/tatuape</span>
+                <span class="text-neutral-600 ml-3 text-xs">context: BRA-administrative (default)</span>
+              </div>
+              <div>
+                <span class="text-neutral-500">bra/sp/zona-leste/tatuape</span>
+                <span class="text-neutral-600 ml-3 text-xs">context: BRA-commercial (hypothetical)</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-neutral-400 mb-4 text-sm leading-relaxed">
+            Context IDs follow the format <code class="font-mono text-emerald-400">{"{COUNTRY}-{scheme}"}</code>,
+            e.g. <code class="font-mono text-emerald-400">BRA-administrative</code>.
+            Each country has exactly one default context. When a context is not specified in a request,
+            the country's default context is used.
+          </p>
+
+          <p class="text-neutral-400 text-sm leading-relaxed">
+            Context is never embedded in the path string itself. It is passed as a query parameter:
+          </p>
+          <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-4 font-mono text-sm mt-3">
+            <span class="text-neutral-500">GET </span>
+            <span class="text-emerald-400">api.geofeed.ai/bra/sp/sao-paulo/tatuape</span>
+            <span class="text-neutral-600">?context=BRA-administrative</span>
+          </div>
+        </section>
+
+        <!-- Hierarchy -->
+        <section id="hierarchy" class="mb-16 scroll-mt-8">
+          <h2 class="text-xl font-semibold text-white mb-4">Hierarchy & local_level</h2>
+          <p class="text-neutral-400 mb-4 leading-relaxed">
+            Every subdivision has a <strong class="text-neutral-200">SubdivisionType</strong> with a numeric
+            <code class="font-mono text-emerald-400">local_level</code> that defines its position in the hierarchy.
+            Higher values = more granular.
+          </p>
+
+          <div class="rounded-lg border border-neutral-800 overflow-hidden mb-6">
+            <table class="w-full text-sm font-mono">
+              <thead>
+                <tr class="border-b border-neutral-800 bg-neutral-900">
+                  <th class="text-left px-4 py-3 text-neutral-500 font-normal">local_level</th>
+                  <th class="text-left px-4 py-3 text-neutral-500 font-normal">type_id</th>
+                  <th class="text-left px-4 py-3 text-neutral-500 font-normal">name (Brazil)</th>
+                  <th class="text-left px-4 py-3 text-neutral-500 font-normal">example path</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-neutral-800">
+                {[
+                  [1, "bra", "País", "bra"],
+                  [2, "bra-state", "Estado (UF)", "bra/sp"],
+                  [3, "bra-municipality", "Município", "bra/sp/sao-paulo"],
+                  [4, "bra-district", "Distrito", "bra/sp/sao-paulo/se"],
+                  [5, "bra-subdistrict", "Subdistrito", "bra/sp/sao-paulo/se/bela-vista"],
+                  [6, "bra-neighborhood", "Bairro", "bra/sp/sao-paulo/tatuape"],
+                ].map(([level, type, name, example]) => (
+                  <tr class="hover:bg-neutral-900/50 transition-colors">
+                    <td class="px-4 py-3 text-neutral-400">{level}</td>
+                    <td class="px-4 py-3 text-emerald-400">{type}</td>
+                    <td class="px-4 py-3 text-neutral-400">{name}</td>
+                    <td class="px-4 py-3 text-neutral-600 text-xs">{example}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p class="text-neutral-400 mb-4 text-sm leading-relaxed">
+            The <code class="font-mono text-emerald-400">minimal_local_level</code> parameter on reverse geocoding
+            endpoints controls response granularity. For example,
+            <code class="font-mono text-emerald-400">minimal_local_level=3</code> returns at most the municipality
+            level — useful when neighborhood precision is unnecessary or unavailable.
+          </p>
+
+          <h3 class="font-medium text-white mb-3 mt-6">Parent-child relationships</h3>
+          <p class="text-neutral-400 text-sm leading-relaxed">
+            Relationships are stored as a many-to-many through table scoped by context (SubdivisionHierarchy).
+            A subdivision can have multiple parents within a context — e.g., a neighborhood that spans district
+            boundaries. Root nodes are self-referencing: <code class="font-mono text-emerald-400">parent == child</code>.
+          </p>
+        </section>
+
+        <!-- GeoFeed Format -->
+        <section id="geofeed" class="mb-16 scroll-mt-8">
+          <h2 class="text-xl font-semibold text-white mb-4">GeoFeed Format</h2>
+          <p class="text-neutral-400 mb-4 leading-relaxed">
+            GeoFeeds use the <a href="https://www.w3.org/TR/activitystreams-core/" target="_blank" rel="noopener" class="text-emerald-400 hover:text-emerald-300 transition-colors">ActivityStreams 2.0</a> wire
+            format (as used by ActivityPub). OGP extends it with a single
+            <code class="font-mono text-emerald-400">geopath</code> field on any
+            <code class="font-mono text-emerald-400">Place</code> or <code class="font-mono text-emerald-400">Object</code>.
+          </p>
+
+          <div class="rounded-lg border border-neutral-800 bg-neutral-900 overflow-hidden mb-6">
+            <div class="px-4 py-3 border-b border-neutral-800 text-xs font-mono text-neutral-500">
+              Activity — a business posts an update anchored to a neighborhood
+            </div>
+            <pre class="p-5 text-sm font-mono text-neutral-300 overflow-x-auto leading-relaxed"><code>{`{
+  "@context": [
+    "https://www.w3.org/ns/activitystreams",
+    "https://geofeed.ai/ns/v1"
+  ],
+  "type": "Create",
+  "actor": {
+    "type": "Organization",
+    "id": "https://findera.app/actors/salao-gi-matos",
+    "name": "Salão Gi Matos",
+    "geopath": "bra/sp/sao-paulo/tatuape"
+  },
+  "object": {
+    "type": "Note",
+    "geopath": "bra/sp/sao-paulo/tatuape",
+    "content": "Agenda aberta para esta semana!",
+    "published": "2025-03-23T10:00:00Z"
+  }
+}`}</code></pre>
+          </div>
+
+          <p class="text-neutral-400 mb-6 text-sm leading-relaxed">
+            Because OGP uses ActivityStreams, any Fediverse client can consume an OGP feed without modification.
+            The <code class="font-mono text-emerald-400">geopath</code> field is additive — it doesn't break
+            existing ActivityPub implementations that don't understand it.
+          </p>
+
+          <h3 class="font-medium text-white mb-3">Actor types</h3>
+          <p class="text-neutral-400 text-sm mb-3 leading-relaxed">
+            Any Schema.org type may be used for actors. Commonly used types:
+          </p>
+          <div class="grid grid-cols-2 gap-2 text-sm font-mono">
+            {["LocalBusiness", "FoodEstablishment", "Organization", "GovernmentOrganization", "Person", "Event"].map((type) => (
+              <div class="rounded border border-neutral-800 px-3 py-2 text-neutral-400">{type}</div>
+            ))}
+          </div>
+        </section>
+
+        <!-- Registry -->
+        <section id="registry" class="mb-16 scroll-mt-8">
+          <h2 class="text-xl font-semibold text-white mb-4">Registry Architecture</h2>
+          <p class="text-neutral-400 mb-4 leading-relaxed">
+            The registry operates like DNS root servers: it knows what geopaths exist and which servers are
+            authoritative for them, but delegates actual content to registered servers.
+            Anyone can register as a content server without permission from the registry operator.
+          </p>
+
+          <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-5 font-mono text-sm mb-6">
+            <div class="text-neutral-500 text-xs mb-4">DNS analogy</div>
+            <div class="space-y-4 text-neutral-400">
+              <div>
+                <div class="text-emerald-400">geofeed.ai/bra/sp/sao-paulo/tatuape</div>
+                <div class="text-neutral-600 text-xs mt-1 ml-4">→ "this geopath exists; here are the servers that serve it"</div>
+              </div>
+              <div>
+                <div class="text-neutral-300">findera.app/geo/bra/sp/sao-paulo/tatuape</div>
+                <div class="text-neutral-600 text-xs mt-1 ml-4">→ "here are the actual activity feeds for this geopath"</div>
+              </div>
+            </div>
+          </div>
+
+          <h3 class="font-medium text-white mb-3">Server types</h3>
+          <div class="space-y-2 text-sm">
+            {[
+              ["index", "Static presence — name, address, contact. No activity feed. Corresponds to Findera Presença (free tier)."],
+              ["feed", "Activity feed — posts, events, offers anchored to the geopath. Updated periodically."],
+              ["signal", "Real-time feed — high-frequency updates, sensor data, live events. Corresponds to Findera Pro."],
+              ["promoted:true", "Promoted placement — shown above organic results in registry responses. Findera Ads layer."],
+            ].map(([type, desc]) => (
+              <div class="flex gap-4 rounded-lg border border-neutral-800 p-4">
+                <span class="font-mono text-xs text-emerald-400 w-28 shrink-0 mt-0.5">{type}</span>
+                <p class="text-neutral-400">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <!-- Endpoints -->
+        <section id="endpoints" class="mb-16 scroll-mt-8">
+          <h2 class="text-xl font-semibold text-white mb-4">API Endpoints</h2>
+          <p class="text-neutral-400 mb-6 text-sm leading-relaxed">
+            All endpoints are read-only (GET). The same data is served via three subdomains in different formats.
+            Server registration is not yet open — contact geofeed.ai.
+          </p>
+
+          <div class="space-y-4">
+            {[
+              {
+                path: "api.geofeed.ai/{geopath}",
+                params: [["context", "string", "optional", "SubdivisionContext ID. Defaults to country default."]],
+                description: "Returns registry metadata for a geopath.",
+              },
+              {
+                path: "api.geofeed.ai/{geopath}/children",
+                params: [["context", "string", "optional", "SubdivisionContext ID."]],
+                description: "Lists direct children of a geopath.",
+              },
+              {
+                path: "api.geofeed.ai/reverse/by_point",
+                params: [
+                  ["point", "string", "required", "Coordinates as lat,lng — e.g. -23.5478,-46.6166"],
+                  ["minimal_local_level", "integer", "optional", "Limits response granularity. E.g. 3 = at most municipality."],
+                ],
+                description: "Reverse geocodes a coordinate to a geopath. Queries local DB first; falls back to Google Maps.",
+              },
+              {
+                path: "api.geofeed.ai/reverse/by_path",
+                params: [
+                  ["path", "string", "required", "A valid SubdivisionPath."],
+                  ["context", "string", "optional", "SubdivisionContext ID."],
+                ],
+                description: "Resolves a path to its full registry metadata.",
+              },
+              {
+                path: "api.geofeed.ai/reverse/by_address",
+                params: [
+                  ["address", "string", "required", "Free-form address string."],
+                  ["country", "string", "optional", "ISO 3166-1 alpha-2 or alpha-3. Narrows geocoding scope."],
+                ],
+                description: "Geocodes a free-form address to a geopath via Google Maps + local registry.",
+              },
+              {
+                path: "api.geofeed.ai/autocomplete",
+                params: [
+                  ["query", "string", "required*", "Partial address or place name. Required if token not provided."],
+                  ["token", "string", "required*", "Signed place token from a previous autocomplete response."],
+                  ["session", "string", "optional", "Session ID for grouping calls. Generated if omitted."],
+                ],
+                description: "Suggests geopaths as the user types. Returns signed tokens to avoid re-querying on selection.",
+              },
+            ].map((ep) => (
+              <div class="rounded-lg border border-neutral-800">
+                <div class="flex items-center gap-3 px-4 py-3 border-b border-neutral-800">
+                  <span class="text-xs bg-emerald-900 text-emerald-300 px-2 py-0.5 rounded font-mono">GET</span>
+                  <span class="font-mono text-sm text-neutral-300">{ep.path}</span>
+                </div>
+                <div class="px-4 py-3">
+                  <p class="text-sm text-neutral-400 mb-3">{ep.description}</p>
+                  <div class="space-y-1">
+                    {ep.params.map(([name, type, req, desc]) => (
+                      <div class="flex gap-3 text-xs font-mono">
+                        <span class="text-emerald-400 w-32 shrink-0">{name}</span>
+                        <span class="text-neutral-600 w-16 shrink-0">{type}</span>
+                        <span class={`w-20 shrink-0 ${req === "required" ? "text-amber-500" : req === "required*" ? "text-amber-500" : "text-neutral-600"}`}>{req}</span>
+                        <span class="text-neutral-500">{desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <!-- Hint system -->
+        <section id="hint" class="mb-16 scroll-mt-8">
+          <h2 class="text-xl font-semibold text-white mb-4">Hint System</h2>
+          <p class="text-neutral-400 mb-4 leading-relaxed">
+            Reverse geocoding responses include a <code class="font-mono text-emerald-400">hint</code> field
+            that tells the consumer where the result originated:
+          </p>
+          <div class="space-y-3 text-sm mb-6">
+            {[
+              ["internal", "Result found in the local registry database. Fast, fully resolved, includes a Subdivision ID."],
+              ["external", "Result came from an external source (Google Maps). May not have a matching subdivision in the registry yet. A MissingGeoPath record is created for data quality tracking."],
+            ].map(([hint, desc]) => (
+              <div class="flex gap-4 rounded-lg border border-neutral-800 p-4">
+                <span class="font-mono text-xs text-purple-400 w-20 shrink-0 mt-0.5">{hint}</span>
+                <p class="text-neutral-400">{desc}</p>
+              </div>
+            ))}
+          </div>
+          <p class="text-neutral-400 text-sm leading-relaxed">
+            Both values are valid GeoPath responses. The
+            <code class="font-mono text-emerald-400 mx-1">subdivision</code> field is only populated on
+            <code class="font-mono text-emerald-400">internal</code> hints.
+            Consumers should handle both gracefully.
+          </p>
+        </section>
+
+        <div class="border-t border-neutral-800 pt-8">
+          <a href="/spec" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors">
+            Protocol Spec — formal schemas, field definitions, error codes →
+          </a>
         </div>
-      </section>
 
-      <!-- llms.txt -->
-      <section>
-        <h2 class="text-lg font-semibold text-white mb-4 pb-2 border-b border-neutral-800">
-          LLM Integration
-        </h2>
-        <p class="text-neutral-400 text-sm mb-4">
-          geofeed.ai ships an <code class="font-mono text-emerald-400">/llms.txt</code> at the root — a machine-readable
-          index of the protocol for LLM crawlers and RAG systems.
-        </p>
-        <p class="text-neutral-400 text-sm">
-          All pages include JSON-LD structured data (Schema.org). The <code class="font-mono text-emerald-400">md.</code> subdomain
-          serves every geopath as plain Markdown for direct LLM ingestion.
-        </p>
-      </section>
-
+      </div>
     </div>
   </div>
 </Layout>

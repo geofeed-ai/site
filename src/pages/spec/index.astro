@@ -1,0 +1,469 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import ModelTable from "../../components/ModelTable.astro";
+---
+
+<Layout
+  title="Protocol Spec"
+  description="Open GeoFeed Protocol — formal specification. Data model, JSON schemas, path validation, context system, error codes."
+>
+  <div class="mx-auto max-w-5xl px-6 pt-16 pb-24">
+    <div class="flex gap-12">
+
+      <!-- Sidebar TOC -->
+      <aside class="hidden lg:block w-52 shrink-0">
+        <nav class="sticky top-8 space-y-1 text-sm">
+          <div class="text-neutral-600 text-xs font-mono uppercase tracking-widest mb-3">Data Model</div>
+          {[
+            ["#country", "Country"],
+            ["#subdivision-context", "SubdivisionContext"],
+            ["#subdivision-type", "SubdivisionType"],
+            ["#subdivision", "Subdivision"],
+            ["#subdivision-hierarchy", "SubdivisionHierarchy"],
+            ["#subdivision-shape", "SubdivisionShape"],
+            ["#subdivision-path", "SubdivisionPath"],
+          ].map(([href, label]) => (
+            <a href={href} class="block text-neutral-500 hover:text-neutral-200 transition-colors py-0.5 pl-2">
+              {label}
+            </a>
+          ))}
+          <div class="text-neutral-600 text-xs font-mono uppercase tracking-widest mt-5 mb-3">API Schemas</div>
+          {[
+            ["#geopath-response", "GeoPath Response"],
+            ["#children-response", "Children Response"],
+            ["#autocomplete-response", "Autocomplete Response"],
+            ["#errors", "Errors"],
+          ].map(([href, label]) => (
+            <a href={href} class="block text-neutral-500 hover:text-neutral-200 transition-colors py-0.5 pl-2">
+              {label}
+            </a>
+          ))}
+          <div class="text-neutral-600 text-xs font-mono uppercase tracking-widest mt-5 mb-3">Validation</div>
+          {[
+            ["#path-validation", "Path Validation"],
+            ["#context-rules", "Context Rules"],
+          ].map(([href, label]) => (
+            <a href={href} class="block text-neutral-500 hover:text-neutral-200 transition-colors py-0.5 pl-2">
+              {label}
+            </a>
+          ))}
+          <div class="pt-4 border-t border-neutral-800 mt-4">
+            <a href="/docs" class="block text-neutral-400 hover:text-white transition-colors py-0.5">
+              ← Conceptual Docs
+            </a>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- Main content -->
+      <div class="min-w-0 flex-1">
+        <p class="font-mono text-xs text-emerald-400 mb-4 tracking-widest uppercase">Protocol Spec</p>
+        <h1 class="text-3xl font-semibold tracking-tight text-white mb-2">OGP Specification</h1>
+        <p class="text-neutral-400 mb-2 text-lg leading-relaxed">
+          Formal data model, JSON schemas, and validation rules.
+        </p>
+        <p class="text-neutral-600 text-sm mb-12">
+          Derived from the reference implementation. For conceptual explanations, see <a href="/docs" class="text-neutral-400 hover:text-white transition-colors">the docs</a>.
+        </p>
+
+        <!-- ── DATA MODEL ── -->
+        <h2 class="text-xs font-mono text-neutral-500 uppercase tracking-widest mb-8 pb-2 border-b border-neutral-800">
+          Data Model
+        </h2>
+
+        <!-- Country -->
+        <section id="country" class="mb-14 scroll-mt-8">
+          <h3 class="text-lg font-semibold text-white mb-1">Country</h3>
+          <p class="text-neutral-500 text-sm mb-5">
+            Root entity. Primary key is the ISO 3166-1 alpha-3 code.
+          </p>
+          <ModelTable rows={[
+            ["alpha_3", "string(3)", "PK", "ISO 3166-1 alpha-3 — e.g. bra, usa, deu"],
+            ["alpha_2", "string(2)", "", "ISO 3166-1 alpha-2 — e.g. br, us, de"],
+            ["numeric", "string(3)", "", "ISO 3166-1 numeric — e.g. 076"],
+            ["flag", "string(2)", "", "Emoji flag string — e.g. 🇧🇷"],
+            ["short_name", "string", "", "Common name — e.g. Brazil"],
+            ["official_name", "string?", "", "Official name — e.g. Federative Republic of Brazil"],
+            ["id_for_osm", "string", "unique", "OpenStreetMap relation ID"],
+            ["i18n", "object", "", "Internationalized names keyed by BCP 47 locale"],
+            ["tags", "object", "", "Free-form metadata tags"],
+            ["centroid", "Point?", "SRID 4326", "Geographic centroid"],
+            ["geom", "MultiPolygon?", "SRID 4326", "Country boundary polygon"],
+          ]} />
+        </section>
+
+        <!-- SubdivisionContext -->
+        <section id="subdivision-context" class="mb-14 scroll-mt-8">
+          <h3 class="text-lg font-semibold text-white mb-1">SubdivisionContext</h3>
+          <p class="text-neutral-500 text-sm mb-5">
+            Defines a geographic hierarchy scheme for a country. Multiple contexts per country are allowed;
+            exactly one must be the default.
+          </p>
+          <ModelTable rows={[
+            ["id", "string(64)", "PK", "Context ID — format: {COUNTRY}-{scheme} e.g. BRA-administrative"],
+            ["country", "FK Country", "", "The country this context belongs to"],
+            ["name", "string(64)", "", "Human-readable name"],
+            ["description", "string(128)", "", "Short description of the hierarchy scheme"],
+            ["is_default", "boolean", "unique per country", "True for exactly one context per country"],
+            ["i18n", "object", "", "Internationalized names"],
+          ]} />
+        </section>
+
+        <!-- SubdivisionType -->
+        <section id="subdivision-type" class="mb-14 scroll-mt-8">
+          <h3 class="text-lg font-semibold text-white mb-1">SubdivisionType</h3>
+          <p class="text-neutral-500 text-sm mb-5">
+            Defines a level in the geographic hierarchy. The <code class="font-mono text-emerald-400">local_level</code> field
+            is the ordinal position — higher = more granular.
+          </p>
+          <ModelTable rows={[
+            ["id", "string(8)", "PK", "Slug — format: {country}-{type} e.g. bra-state, bra-neighborhood"],
+            ["country", "FK Country", "generated", "Derived from first 3 chars of id"],
+            ["context", "FK SubdivisionContext", "", "The context this type belongs to"],
+            ["slug", "string(64)", "", "Singular slug — e.g. estado, municipio, bairro"],
+            ["slug_plural", "string(64)", "", "Plural slug — e.g. estados, municipios, bairros"],
+            ["name", "string(64)", "", "Singular name — e.g. Estado, Município, Bairro"],
+            ["name_plural", "string(64)", "", "Plural name"],
+            ["local_level", "integer", "", "Ordinal position in hierarchy. 1 = country root. Higher = more granular."],
+            ["id_for_iso", "integer?", "", "ISO 3166-2 numeric type code"],
+            ["osm_admin_level", "integer?", "", "Corresponding OSM admin_level tag value"],
+            ["types_for_gmaps", "object", "", "Mapping from Google Maps address_component types to this SubdivisionType"],
+            ["i18n", "object", "", "Internationalized names"],
+          ]} />
+        </section>
+
+        <!-- Subdivision -->
+        <section id="subdivision" class="mb-14 scroll-mt-8">
+          <h3 class="text-lg font-semibold text-white mb-1">Subdivision</h3>
+          <p class="text-neutral-500 text-sm mb-5">
+            A single geographic subdivision — a neighborhood, municipality, state, or country.
+            Geometry is stored separately in SubdivisionShape.
+          </p>
+          <ModelTable rows={[
+            ["id", "bigint", "PK", "Internal auto-increment identifier"],
+            ["country", "FK Country", "generated", "Derived from type.country"],
+            ["type", "FK SubdivisionType", "", "The type/level of this subdivision"],
+            ["source", "FK SubdivisionSource", "", "Data source — e.g. IBGE, OSM, Brasil Aberto"],
+            ["id_for_source", "string(32)?", "", "Source-specific identifier"],
+            ["id_for_iso", "string(6)?", "", "ISO 3166-2 code — e.g. BR-SP"],
+            ["id_for_osm", "bigint?", "", "OpenStreetMap relation ID"],
+            ["id_for_gmaps", "string(94)?", "", "Google Maps place_id"],
+            ["name", "string(96)", "", "Full name — e.g. São Paulo"],
+            ["short_name", "string(32)?", "", "Short name — e.g. SP"],
+            ["slug", "string(96)", "", "URL slug — e.g. sao-paulo"],
+            ["short_slug", "string(32)?", "", "Short slug — e.g. sp"],
+            ["parents", "M2M Subdivision", "through SubdivisionHierarchy", "Parent subdivisions in the active context"],
+            ["children", "M2M Subdivision", "through SubdivisionHierarchy", "Child subdivisions in the active context"],
+            ["i18n", "object", "", "Internationalized names"],
+            ["tags", "object", "", "Free-form tags"],
+            ["updated_at", "datetime", "auto", "Last modified timestamp"],
+          ]} />
+
+          <div class="mt-5 rounded-lg border border-neutral-800 bg-neutral-900 p-4">
+            <div class="text-neutral-500 text-xs font-mono mb-3">Computed properties</div>
+            <div class="space-y-2 text-sm font-mono">
+              {[
+                ["path", "Denormalized SubdivisionPath — e.g. bra/sp/sao-paulo/tatuape"],
+                ["short_path", "Short path without country prefix — e.g. sp/sao-paulo/tatuape"],
+                ["recursive_title", "Full human title — e.g. Tatuapé, bairro em São Paulo, SP, Brasil"],
+                ["ancestry_title", "Context title — e.g. bairro em São Paulo, SP"],
+                ["is_root", "True if this subdivision is the root of its context (no real parent)"],
+              ].map(([prop, desc]) => (
+                <div class="flex gap-3">
+                  <span class="text-emerald-400 w-32 shrink-0">{prop}</span>
+                  <span class="text-neutral-500">{desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <!-- SubdivisionHierarchy -->
+        <section id="subdivision-hierarchy" class="mb-14 scroll-mt-8">
+          <h3 class="text-lg font-semibold text-white mb-1">SubdivisionHierarchy</h3>
+          <p class="text-neutral-500 text-sm mb-5">
+            Many-to-many through table that stores parent-child relationships between subdivisions,
+            scoped by context. A subdivision can have multiple parents (e.g., a neighborhood straddling a district boundary).
+            Root nodes are identified by <code class="font-mono text-emerald-400">parent_id == child_id</code>.
+          </p>
+          <ModelTable rows={[
+            ["id", "bigint", "PK", "Auto-increment"],
+            ["country", "FK Country", "generated", "Derived from context.country"],
+            ["context", "FK SubdivisionContext", "", "The hierarchy context this relationship belongs to"],
+            ["parent", "FK Subdivision", "", "Parent subdivision"],
+            ["child", "FK Subdivision", "", "Child subdivision"],
+            ["is_root", "boolean", "generated", "True when parent_id == child_id (self-reference = root node)"],
+          ]} />
+          <p class="text-neutral-500 text-sm mt-4">
+            Unique constraint: <code class="font-mono text-emerald-400">(parent, child, context)</code>
+          </p>
+        </section>
+
+        <!-- SubdivisionShape -->
+        <section id="subdivision-shape" class="mb-14 scroll-mt-8">
+          <h3 class="text-lg font-semibold text-white mb-1">SubdivisionShape</h3>
+          <p class="text-neutral-500 text-sm mb-5">
+            Geographic geometry for a subdivision. Stored separately to keep the Subdivision table lean.
+            Used for point-in-polygon reverse geocoding via PostGIS <code class="font-mono text-emerald-400">ST_Contains()</code>.
+          </p>
+          <ModelTable rows={[
+            ["subdivision", "OneToOne Subdivision", "PK/FK", "The subdivision this shape belongs to"],
+            ["centroid", "Point", "SRID 4326", "Geographic centroid of the shape"],
+            ["geom", "MultiPolygon", "SRID 4326", "Full boundary polygon(s)"],
+            ["source", "FK SubdivisionSource", "", "Data source — e.g. IBGE Malhas, OSM Geofabrik"],
+          ]} />
+        </section>
+
+        <!-- SubdivisionPath -->
+        <section id="subdivision-path" class="mb-14 scroll-mt-8">
+          <h3 class="text-lg font-semibold text-white mb-1">SubdivisionPath</h3>
+          <p class="text-neutral-500 text-sm mb-5">
+            Denormalized path cache. Stores the canonical <code class="font-mono text-emerald-400">path</code> string
+            for a <code class="font-mono text-emerald-400">(subdivision, context)</code> pair.
+            This is the fast lookup key for all path-based API queries — path generation via hierarchy traversal is expensive,
+            so it's computed once and cached here.
+          </p>
+          <ModelTable rows={[
+            ["id", "bigint", "PK", "Auto-increment"],
+            ["country", "FK Country", "generated", "Derived from context.country"],
+            ["context", "FK SubdivisionContext", "", "The context this path belongs to"],
+            ["subdivision", "OneToOne Subdivision?", "unique, db_constraint=False", "The subdivision this path identifies"],
+            ["path", "string(256)", "unique", "Full path — e.g. bra/sp/sao-paulo/tatuape"],
+            ["short_path", "string(256)?", "unique", "Path without country prefix — e.g. sp/sao-paulo/tatuape"],
+            ["updated_at", "datetime", "auto", "Last update timestamp"],
+          ]} />
+          <p class="text-neutral-500 text-sm mt-4">
+            Unique constraint: <code class="font-mono text-emerald-400">(subdivision, context)</code>
+          </p>
+        </section>
+
+        <!-- ── API SCHEMAS ── -->
+        <h2 class="text-xs font-mono text-neutral-500 uppercase tracking-widest mb-8 pb-2 border-b border-neutral-800 mt-4">
+          API Schemas
+        </h2>
+
+        <!-- GeoPath Response -->
+        <section id="geopath-response" class="mb-14 scroll-mt-8">
+          <h3 class="text-lg font-semibold text-white mb-1">GeoPath Response</h3>
+          <p class="text-neutral-500 text-sm mb-5">
+            Returned by all reverse geocoding endpoints and the main <code class="font-mono text-emerald-400">/{"{geopath}"}</code> registry lookup.
+          </p>
+
+          <div class="rounded-lg border border-neutral-800 bg-neutral-900 overflow-hidden mb-5">
+            <div class="px-4 py-3 border-b border-neutral-800 text-xs font-mono text-neutral-500">
+              Example — internal result (found in registry)
+            </div>
+            <pre class="p-5 text-sm font-mono text-neutral-300 overflow-x-auto leading-relaxed"><code>{`{
+  "path": "bra/sp/sao-paulo/tatuape",
+  "hint": "internal",
+  "slug": "tatuape",
+  "name": "Tatuapé",
+  "recursive_title": "Tatuapé, bairro em São Paulo, SP, Brasil",
+  "ancestry_title": "bairro em São Paulo, SP",
+  "subdivision": {
+    "id": 42819,
+    "local_feed": null
+  },
+  "servers": [
+    {
+      "url": "https://findera.app/geo/bra/sp/sao-paulo/tatuape",
+      "type": "feed",
+      "operator": "findera.com.br"
+    }
+  ],
+  "geoshape": {
+    "type": "MultiPolygon",
+    "coordinates": [...]
+  }
+}`}</code></pre>
+          </div>
+
+          <div class="rounded-lg border border-neutral-800 bg-neutral-900 overflow-hidden mb-5">
+            <div class="px-4 py-3 border-b border-neutral-800 text-xs font-mono text-neutral-500">
+              Example — external result (from Google Maps, not yet in registry)
+            </div>
+            <pre class="p-5 text-sm font-mono text-neutral-300 overflow-x-auto leading-relaxed"><code>{`{
+  "path": "bra/sp/sao-paulo/vila-prudente",
+  "hint": "external",
+  "slug": "vila-prudente",
+  "name": "Vila Prudente",
+  "recursive_title": "Vila Prudente, bairro em São Paulo, SP, Brasil",
+  "ancestry_title": "bairro em São Paulo, SP",
+  "subdivision": null
+}`}</code></pre>
+          </div>
+
+          <ModelTable rows={[
+            ["path", "string", "always", "Canonical SubdivisionPath"],
+            ["hint", '"internal" | "external"', "always", "Where the result originated. internal = found in registry DB."],
+            ["slug", "string", "always", "Last segment slug — e.g. tatuape"],
+            ["name", "string", "always", "Human-readable name of the subdivision"],
+            ["recursive_title", "string?", "optional", "Full hierarchical title — e.g. Tatuapé, bairro em São Paulo, SP, Brasil"],
+            ["ancestry_title", "string?", "optional", "Ancestry description — e.g. bairro em São Paulo, SP"],
+            ["subdivision", "object?", "internal only", "Present only when hint=internal. Contains subdivision id."],
+            ["servers", "array?", "registry lookup only", "List of registered content servers for this geopath."],
+            ["geoshape", "GeoJSON?", "registry lookup only", "Boundary geometry as GeoJSON MultiPolygon."],
+          ]} />
+        </section>
+
+        <!-- Children Response -->
+        <section id="children-response" class="mb-14 scroll-mt-8">
+          <h3 class="text-lg font-semibold text-white mb-1">Children Response</h3>
+          <p class="text-neutral-500 text-sm mb-5">
+            Returned by <code class="font-mono text-emerald-400">GET api.geofeed.ai/{"{geopath}"}/children</code>.
+            Lists direct children within the active context.
+          </p>
+          <div class="rounded-lg border border-neutral-800 bg-neutral-900 overflow-hidden">
+            <pre class="p-5 text-sm font-mono text-neutral-300 overflow-x-auto leading-relaxed"><code>{`{
+  "path": "bra/sp/sao-paulo",
+  "context": "BRA-administrative",
+  "count": 96,
+  "children": [
+    {
+      "path": "bra/sp/sao-paulo/tatuape",
+      "slug": "tatuape",
+      "name": "Tatuapé",
+      "type": "bra-neighborhood",
+      "local_level": 6
+    },
+    ...
+  ]
+}`}</code></pre>
+          </div>
+        </section>
+
+        <!-- Autocomplete Response -->
+        <section id="autocomplete-response" class="mb-14 scroll-mt-8">
+          <h3 class="text-lg font-semibold text-white mb-1">Autocomplete Response</h3>
+          <p class="text-neutral-500 text-sm mb-5">
+            Returned by <code class="font-mono text-emerald-400">GET api.geofeed.ai/autocomplete</code>.
+            Suggestions carry signed tokens — passing a token back resolves the selection without re-querying Google Maps.
+          </p>
+          <div class="rounded-lg border border-neutral-800 bg-neutral-900 overflow-hidden mb-5">
+            <pre class="p-5 text-sm font-mono text-neutral-300 overflow-x-auto leading-relaxed"><code>{`{
+  "session": "a1b2c3d4e5f6",
+  "query": "tatuapé",
+  "count": 3,
+  "suggestions": [
+    {
+      "token": "eyJ...",
+      "text": "Tatuapé",
+      "secondary": "São Paulo, SP, Brasil",
+      "matches": [{ "offset": 0, "length": 7 }]
+    }
+  ]
+}`}</code></pre>
+          </div>
+          <p class="text-neutral-500 text-sm">
+            Tokens are <a href="https://docs.djangoproject.com/en/stable/topics/signing/" target="_blank" rel="noopener" class="text-neutral-400 hover:text-white transition-colors">TimestampSigned</a> base64-encoded Google Maps place IDs.
+            They expire after <code class="font-mono text-emerald-400">GEO_AUTOCOMPLETE_MAX_AGE</code> seconds.
+            Pass an expired token to get a fresh autocomplete flow.
+          </p>
+        </section>
+
+        <!-- Errors -->
+        <section id="errors" class="mb-14 scroll-mt-8">
+          <h3 class="text-lg font-semibold text-white mb-1">Errors</h3>
+          <p class="text-neutral-500 text-sm mb-5">
+            All errors return a JSON body with an <code class="font-mono text-emerald-400">error_type</code> field.
+          </p>
+          <div class="space-y-3 text-sm">
+            {[
+              ["404", "not_found", "No subdivision found for the given path, point, or address."],
+              ["400", "invalid_path", "Path string does not match the required format or country code is unknown."],
+              ["400", "invalid_point", "Point string cannot be parsed as lat,lng coordinates."],
+              ["400", "invalid_context", "The provided context does not match the country inferred from the path."],
+              ["400", "unknown_context", "No default context exists for the country and none was provided."],
+              ["400", "invalid_country", "Country code (alpha-2 or alpha-3) not found in pycountry."],
+              ["501", "not_implemented", "Endpoint exists but is not yet implemented (e.g. /search)."],
+            ].map(([status, type, desc]) => (
+              <div class="rounded-lg border border-neutral-800 p-4">
+                <div class="flex items-center gap-3 mb-1 font-mono text-xs">
+                  <span class={`px-2 py-0.5 rounded ${status === "404" ? "bg-amber-900 text-amber-300" : status === "400" ? "bg-red-900/50 text-red-300" : "bg-neutral-800 text-neutral-400"}`}>
+                    HTTP {status}
+                  </span>
+                  <span class="text-emerald-400">{type}</span>
+                </div>
+                <p class="text-neutral-500 text-xs">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <!-- ── VALIDATION ── -->
+        <h2 class="text-xs font-mono text-neutral-500 uppercase tracking-widest mb-8 pb-2 border-b border-neutral-800 mt-4">
+          Validation
+        </h2>
+
+        <!-- Path Validation -->
+        <section id="path-validation" class="mb-14 scroll-mt-8">
+          <h3 class="text-lg font-semibold text-white mb-1">Path Validation</h3>
+          <p class="text-neutral-500 text-sm mb-5">Rules applied to every SubdivisionPath string before any lookup.</p>
+
+          <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-5 font-mono text-sm mb-6">
+            <div class="text-neutral-500 text-xs mb-3">Regex</div>
+            <div class="text-emerald-400">{"^[a-z]{2,3}(?:/[a-z0-9-_]+)*$"}</div>
+          </div>
+
+          <div class="space-y-3 text-sm">
+            {[
+              ["Lowercase only", "All path segments must be lowercase."],
+              ["Alpha-3 required", "First segment must be 2–3 letters. Alpha-2 codes are normalized to alpha-3 before storage."],
+              ["Valid country", "First segment must resolve to a known ISO 3166-1 country (pycountry lookup)."],
+              ["Slug characters", "Segments after the country may contain lowercase letters, digits, hyphens, and underscores."],
+              ["No trailing slash", "Paths must not end with a slash."],
+              ["No empty segments", "Double slashes (bra//sp) are invalid."],
+            ].map(([rule, desc]) => (
+              <div class="flex gap-4 rounded-lg border border-neutral-800 p-3">
+                <span class="text-neutral-300 text-xs w-36 shrink-0 mt-0.5">{rule}</span>
+                <p class="text-neutral-500 text-xs">{desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div class="mt-6 rounded-lg border border-neutral-800 bg-neutral-900 p-5 font-mono text-xs">
+            <div class="text-neutral-500 mb-3">Valid</div>
+            <div class="space-y-1 text-emerald-400">
+              <div>bra</div>
+              <div>bra/sp</div>
+              <div>bra/sp/sao-paulo</div>
+              <div>bra/sp/sao-paulo/tatuape</div>
+              <div>br/sp/sao-paulo  → normalized to bra/sp/sao-paulo</div>
+            </div>
+            <div class="text-neutral-500 mt-4 mb-3">Invalid</div>
+            <div class="space-y-1 text-red-400">
+              <div>BRA/SP            → uppercase</div>
+              <div>bra/São Paulo      → non-ASCII</div>
+              <div>bra/sp/           → trailing slash</div>
+              <div>bra//sp           → empty segment</div>
+              <div>xx/sp             → unknown country code</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Context Rules -->
+        <section id="context-rules" class="mb-14 scroll-mt-8">
+          <h3 class="text-lg font-semibold text-white mb-1">Context Rules</h3>
+          <p class="text-neutral-500 text-sm mb-5">
+            Rules for the <code class="font-mono text-emerald-400">context</code> parameter.
+          </p>
+          <div class="space-y-3 text-sm">
+            {[
+              ["Format", "Context IDs follow the pattern {COUNTRY}-{scheme}, e.g. BRA-administrative. The country segment is uppercase alpha-3."],
+              ["Default", "If omitted, the default context for the country inferred from the path is used. Each country has exactly one default context."],
+              ["Country match", "The country inferred from the path's first segment must match the country in the context ID. Mismatch → invalid_context error."],
+              ["Deducibility", "If no default context exists for the inferred country, the context parameter becomes required. Omitting it → unknown_context error."],
+            ].map(([rule, desc]) => (
+              <div class="flex gap-4 rounded-lg border border-neutral-800 p-4">
+                <span class="text-neutral-300 text-xs w-28 shrink-0 mt-0.5">{rule}</span>
+                <p class="text-neutral-500 text-sm">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+</Layout>
+
