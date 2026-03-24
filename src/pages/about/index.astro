@@ -86,11 +86,12 @@ import Layout from "../../layouts/Layout.astro";
     <section class="mb-12">
       <h2 class="text-lg font-semibold text-white mb-4">What OGP is (and isn't)</h2>
       <p class="text-neutral-400 leading-relaxed mb-4">
-        OGP is infrastructure, not a product. It defines a geographic namespace
-        (<a href="/docs#subdivision-path" class="text-emerald-400 hover:text-emerald-300 transition-colors">SubdivisionPaths</a>),
-        a root registry that maps paths to content servers, and a feed format based on ActivityStreams 2.0
-        with a single addition: the <code class="font-mono text-emerald-400">geopath</code> field.
-        It has no dashboard, no login, no pricing page.
+        OGP is infrastructure, not a product. At its core is the <strong class="text-neutral-200">GeoPath</strong> —
+        a hierarchical identifier made of GeoSubdivisions, from country down to neighborhood:
+        <code class="font-mono text-emerald-400 mx-1">bra/sp/sao-paulo/tatuape</code>.
+        On top of that: a root registry that maps GeoPaths to content servers, and a feed format
+        based on ActivityStreams 2.0 anchored to a place.
+        No dashboard, no login, no pricing page.
       </p>
       <p class="text-neutral-400 leading-relaxed">
         The registry at geofeed.ai is the root — the DNS of the protocol.
